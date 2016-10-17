@@ -18,7 +18,9 @@ myApp.controller('AppCtrl', ['$scope', '$http', function($scope, $http) {
     $http({
       method: 'POST',
       url: '/employee',
-      data: $scope.employee
+      data: {
+        employee: $scope.employee
+      }
     }).success(function(response) {
       updateView();
     });
@@ -27,24 +29,22 @@ myApp.controller('AppCtrl', ['$scope', '$http', function($scope, $http) {
   $scope.removeEmployee = function(id) {
     $http({
       method: 'DELETE',
-      url: '/employee' + id
+      url: '/employee/' + id.toString()
     }).success(function(response) {
       updateView();
     });
   };
 
   $scope.editEmployee = function(id) {
-    console.log(id);
     $http({
       method: 'GET',
-      url: '/employee'
+      url: '/employee/'+id.toString(),
     }).success(function(response) {
-      $scope.employee = response.data.employees;
+      $scope.employee = response.data.employee[0];
     });
   };
 
   $scope.updateEmployee = function() {
-    console.log($scope.employee._id);
     $http({
       method: 'PUT',
       url: '/employee',

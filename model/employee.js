@@ -37,6 +37,7 @@ var Employee = mongoose.model('employee', empSchema);
 var employeeDao = {
 
 	findAll: findAll,
+	findById: findById,
 	updateEmployee: updateEmployee,
 	addEmployee: addEmployee,
 	deleteEmployee: deleteEmployee
@@ -60,9 +61,29 @@ function findAll(req, res) {
 	});
 }
 
+function findById(req, res) {
+	var response = new Response();
+
+	Employee.find({
+		_id: req.params.id
+	}).exec(function(err, employees) {
+		if (!err) {
+			response.data.employee = employees;
+			response.status.statusCode = '200';
+			response.status.message = 'fetched the employees';
+			res.status(200).send(response);
+		} else {
+			response.status.statusCode = '500';
+			response.status.message = 'unable to fetch blogs ';
+			res.status(500).send(response);
+		}
+	});
+}
+
 function addEmployee(req, res) {
 	var response = new Response();
-	Employee.create(req.body, function(err, data) {
+	req.body.employee.age = getAge(req.body.employee.dob);
+	Employee.create(req.body.employee, function(err, data) {
 		if (!err) {
 			response.data.employee = data;
 			response.status.statusCode = '200';
@@ -78,8 +99,6 @@ function addEmployee(req, res) {
 
 function updateEmployee(req, res) {
 	var response = new Response();
-
-
 	var employee = req.body.employee;
 	var searchQuery = {
 		"_id": req.body.employeeId
@@ -90,7 +109,8 @@ function updateEmployee(req, res) {
 			email: employee.email,
 			dob: employee.dob,
 			department: employee.department,
-			gender: employee.gender
+			gender: employee.gender,
+			age: getAge(employee.dob)
 		}
 	};
 	var options = {
@@ -136,6 +156,17 @@ function deleteEmployee(req, res) {
 			res.status(500).send(response);
 		}
 	});
+}
+
+function getAge(dateString) {
+	var today = new Date();
+	var birthDate = new Date(dateString);
+	var age = today.getFullYear() - birthDate.getFullYear();
+	var m = today.getMonth() - birthDate.getMonth();
+	if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+		age--;
+	}
+	return age;
 }
 
 module.exports = employeeDao;
